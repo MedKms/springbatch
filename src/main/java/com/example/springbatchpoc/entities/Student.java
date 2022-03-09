@@ -12,7 +12,6 @@ import javax.persistence.Id;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 
 public class Student {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +20,9 @@ public class Student {
     private String firstName;
     private String email;
     private double age;
-
+    @Override
+    public String toString(){
+        return "id: "+id+" firstName: "+firstName+" lastName: "+lastName+" email: "+email+" age: "+age;
+    }
 
 }

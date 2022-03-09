@@ -1,7 +1,6 @@
 package com.example.springbatchpoc.config;
 
 import com.example.springbatchpoc.jobs.chunk.ReadFile;
-import com.example.springbatchpoc.jobs.chunk.ReadFileImpl;
 import com.example.springbatchpoc.jobs.chunk.StudentItemProcessor;
 import com.example.springbatchpoc.jobs.chunk.StudentItemWriter;
 import com.example.springbatchpoc.jobs.tasklet.FileDeletingTasklet;
@@ -15,32 +14,24 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 
-import javax.annotation.Resource;
-import java.io.File;
 
 @Slf4j
 @Configuration
 @EnableBatchProcessing
 public class JobConfig {
 
-    //@Value("${inputFile}")
-    @Resource(name="namedFile")
-    private File fileCsv;
 
-   private final JobBuilderFactory jobBuilderFactory;
-   private final StepBuilderFactory stepBuilderFactory;
 
-    public JobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory) {
+    private final ReadFile readFile;
+    private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
+
+    public JobConfig(ReadFile readFile, JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory) {
+        this.readFile = readFile;
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
     }
@@ -59,7 +50,7 @@ public class JobConfig {
     public Step myStepChunk(){
         return stepBuilderFactory.get("myStep")
                 .<Student,Student>chunk(10)
-                .reader(itemReader(this.fileCsv))
+                .reader(itemReader())
                 .processor(ItemProcessor())
                 .writer(itemWriter())
                 .build();
@@ -74,9 +65,8 @@ public class JobConfig {
         return new StudentItemWriter();
     }
     @Bean
-    public ItemReader<Student> itemReader(File fileName) {
-        ReadFile readFile=new ReadFileImpl();
-        return readFile.readFile(fileName);
+    public ItemReader<Student> itemReader() {
+        return readFile.readFile();
     }
     // ******** Step Tasklet deleting files in Directory *******
     @Bean
